@@ -231,6 +231,13 @@
     return [view isSuperviewOfView:self];
 }
 
+- (void)removeAllSubviews {
+    while (self.subviews.count) {
+        UIView *child = self.subviews.lastObject;
+        [child removeFromSuperview];
+    }
+}
+
 //responder chain
 
 - (UIViewController *)firstViewController
@@ -351,24 +358,52 @@
     self.frame = frame;
 }
 
-- (CGFloat)x
-{
+- (CGFloat)centerX {
     return self.center.x;
 }
 
-- (void)setX:(CGFloat)x
-{
-    self.center = CGPointMake(x, self.center.y);
+- (void)setCenterX:(CGFloat)centerX {
+    self.center = CGPointMake(centerX, self.center.y);
 }
 
-- (CGFloat)y
-{
+- (CGFloat)centerY {
     return self.center.y;
 }
 
-- (void)setY:(CGFloat)y
-{
-    self.center = CGPointMake(self.center.x, y);
+- (void)setCenterY:(CGFloat)centerY {
+    self.center = CGPointMake(self.center.x, centerY);
+}
+
+- (CGFloat)minX {
+    return CGRectGetMinX(self.frame);
+}
+
+- (CGFloat)midX {
+    return CGRectGetMidX(self.frame);
+}
+
+- (CGFloat)maxX {
+    return CGRectGetMaxX(self.frame);
+}
+
+- (CGFloat)minY {
+    return CGRectGetMinY(self.frame);
+}
+
+- (CGFloat)midY {
+    return CGRectGetMidY(self.frame);
+}
+
+- (CGFloat)maxY {
+    return CGRectGetMaxY(self.frame);
+}
+
+- (CGFloat)halfWidth {
+    return self.width / 2.0;
+}
+
+- (CGFloat)halfHeight {
+    return self.height / 2.0;
 }
 
 //bounds accessors
@@ -476,4 +511,29 @@
     }
 }
 
+#pragma mark - Border & Radius
+- (void)setBorderColor:(UIColor *)borderColor {
+    self.layer.borderColor = borderColor.CGColor;
+}
+
+- (UIColor *)borderColor {
+    return [UIColor colorWithCGColor:self.layer.borderColor];
+}
+
+- (void)setBorderWidth:(CGFloat)borderWidth {
+    self.layer.borderWidth = borderWidth;
+}
+
+- (CGFloat)borderWidth {
+    return self.layer.borderWidth;
+}
+
+- (void)setCornerRadius:(CGFloat)cornerRadius {
+    self.clipsToBounds = YES;
+    self.layer.cornerRadius = cornerRadius;
+}
+
+- (CGFloat)cornerRadius {
+    return self.layer.cornerRadius;
+}
 @end

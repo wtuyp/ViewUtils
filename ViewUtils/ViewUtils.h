@@ -59,6 +59,7 @@
 - (BOOL)viewOrAnySuperviewIsKindOfClass:(Class)viewClass;
 - (BOOL)isSuperviewOfView:(UIView *)view;
 - (BOOL)isSubviewOfView:(UIView *)view;
+- (void)removeAllSubviews;
 
 - (UIViewController *)firstViewController;
 - (UIView *)firstResponder;
@@ -73,8 +74,16 @@
 @property (nonatomic, assign) CGFloat right;
 @property (nonatomic, assign) CGFloat width;
 @property (nonatomic, assign) CGFloat height;
-@property (nonatomic, assign) CGFloat x;
-@property (nonatomic, assign) CGFloat y;
+@property (nonatomic, assign) CGFloat centerX;
+@property (nonatomic, assign) CGFloat centerY;
+@property (nonatomic, assign, readonly) CGFloat minX;
+@property (nonatomic, assign, readonly) CGFloat midX;
+@property (nonatomic, assign, readonly) CGFloat maxX;
+@property (nonatomic, assign, readonly) CGFloat minY;
+@property (nonatomic, assign, readonly) CGFloat midY;
+@property (nonatomic, assign, readonly) CGFloat maxY;
+@property (nonatomic, assign, readonly) CGFloat halfWidth;
+@property (nonatomic, assign, readonly) CGFloat halfHeight;
 
 //bounds accessors
 
@@ -86,6 +95,11 @@
 
 @property (nonatomic, readonly) CGRect contentBounds;
 @property (nonatomic, readonly) CGPoint contentCenter;
+
+//layer accessors
+@property (nonatomic, assign) UIColor *borderColor;
+@property (nonatomic, assign) CGFloat borderWidth;
+@property (nonatomic, assign) CGFloat cornerRadius;
 
 //additional frame setters
 
