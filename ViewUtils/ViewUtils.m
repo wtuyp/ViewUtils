@@ -32,7 +32,7 @@
 
 #import "ViewUtils.h"
 #import <QuartzCore/QuartzCore.h>
-
+#import <objc/runtime.h>
 
 #pragma GCC diagnostic ignored "-Wgnu"
 
@@ -97,6 +97,11 @@
         }
         [self addSubview:view];
     }
+}
+
++ (instancetype)loadViewWithNibName:(NSString *)name {
+    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:name owner:self options:nil];
+    return nibs[0];
 }
 
 //view searching
@@ -358,52 +363,64 @@
     self.frame = frame;
 }
 
-- (CGFloat)centerX {
+- (CGFloat)centerX
+{
     return self.center.x;
 }
 
-- (void)setCenterX:(CGFloat)centerX {
+- (void)setCenterX:(CGFloat)centerX
+{
     self.center = CGPointMake(centerX, self.center.y);
 }
 
-- (CGFloat)centerY {
+- (CGFloat)centerY
+{
     return self.center.y;
 }
 
-- (void)setCenterY:(CGFloat)centerY {
+- (void)setCenterY:(CGFloat)centerY
+{
     self.center = CGPointMake(self.center.x, centerY);
 }
 
-- (CGFloat)minX {
+- (CGFloat)minX
+{
     return CGRectGetMinX(self.frame);
 }
 
-- (CGFloat)midX {
+- (CGFloat)midX
+{
     return CGRectGetMidX(self.frame);
 }
 
-- (CGFloat)maxX {
+- (CGFloat)maxX
+{
     return CGRectGetMaxX(self.frame);
 }
 
-- (CGFloat)minY {
+- (CGFloat)minY
+{
     return CGRectGetMinY(self.frame);
 }
 
-- (CGFloat)midY {
+- (CGFloat)midY
+{
     return CGRectGetMidY(self.frame);
 }
 
-- (CGFloat)maxY {
+- (CGFloat)maxY
+{
     return CGRectGetMaxY(self.frame);
 }
 
-- (CGFloat)halfWidth {
-    return self.width / 2.0;
+- (CGFloat)width_2
+{
+    return self.size.width / 2.0;
 }
 
-- (CGFloat)halfHeight {
-    return self.height / 2.0;
+- (CGFloat)height_2
+{
+    return self.size.height / 2.0;
 }
 
 //bounds accessors
@@ -454,6 +471,37 @@
 - (CGPoint)contentCenter
 {
     return CGPointMake(self.boundsWidth/2.0f, self.boundsHeight/2.0f);
+}
+
+#pragma mark - Border & Radius
+- (void)setCornerRadius:(CGFloat)cornerRadius {
+    self.clipsToBounds = YES;
+    self.layer.cornerRadius = cornerRadius;
+}
+
+- (CGFloat)cornerRadius {
+    return self.layer.cornerRadius;
+}
+
+- (void)setBorderColor:(UIColor *)borderColor {
+    self.layer.borderColor = borderColor.CGColor;
+}
+
+- (UIColor *)borderColor {
+    return [UIColor colorWithCGColor:self.layer.borderColor];
+}
+
+- (void)setBorderWidth:(CGFloat)borderWidth {
+    self.layer.borderWidth = borderWidth;
+}
+
+- (CGFloat)borderWidth {
+    return self.layer.borderWidth;
+}
+
+- (void)setBorderWidth:(CGFloat)borderWidth color:(UIColor *)borderColor {
+    self.layer.borderWidth = borderWidth;
+    self.layer.borderColor = borderColor.CGColor;
 }
 
 //additional frame setters
@@ -511,29 +559,96 @@
     }
 }
 
-#pragma mark - Border & Radius
-- (void)setBorderColor:(UIColor *)borderColor {
-    self.layer.borderColor = borderColor.CGColor;
+//add sub-views
+- (void)addTopLineWithColor:(UIColor *)color width:(CGFloat)width {
+    UIView *topLine = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.width, width)];
+    topLine.backgroundColor = color;
+    [self addSubview:topLine];
 }
 
-- (UIColor *)borderColor {
-    return [UIColor colorWithCGColor:self.layer.borderColor];
+- (void)addTopLineWithColor:(UIColor *)color {
+    [self addTopLineWithColor:color width:1.0];
 }
 
-- (void)setBorderWidth:(CGFloat)borderWidth {
-    self.layer.borderWidth = borderWidth;
+- (void)addBottomLineWithColor:(UIColor *)color width:(CGFloat)width {
+    UIView *bottomLine = [[UIView alloc] initWithFrame:CGRectMake(0, self.height - 1.0, self.width, 1.0)];
+    bottomLine.backgroundColor = color;
+    [self addSubview:bottomLine];
 }
 
-- (CGFloat)borderWidth {
-    return self.layer.borderWidth;
+- (void)addBottomLineWithColor:(UIColor *)color {
+    [self addBottomLineWithColor:color width:1.0];
 }
 
-- (void)setCornerRadius:(CGFloat)cornerRadius {
-    self.clipsToBounds = YES;
-    self.layer.cornerRadius = cornerRadius;
+- (void)addLeftLineWithColor:(UIColor *)color width:(CGFloat)width {
+    UIView *bottomLine = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 1.0, self.height)];
+    bottomLine.backgroundColor = color;
+    [self addSubview:bottomLine];
 }
 
-- (CGFloat)cornerRadius {
-    return self.layer.cornerRadius;
+- (void)addLeftLineWithColor:(UIColor *)color {
+    [self addLeftLineWithColor:color width:1.0];
 }
+
+- (void)addRightLineWithColor:(UIColor *)color width:(CGFloat)width {
+    UIView *bottomLine = [[UIView alloc] initWithFrame:CGRectMake(self.width - 1.0, 0, 1.0, self.height)];
+    bottomLine.backgroundColor = color;
+    [self addSubview:bottomLine];
+}
+
+- (void)addRightLineWithColor:(UIColor *)color {
+    [self addRightLineWithColor:color width:1.0];
+}
+
+- (void)addSeparateLineWithColor:(UIColor *)color row:(NSUInteger)row column:(NSUInteger)column {
+    if (row < 2 && column < 2) {
+        return;
+    }
+    
+    CGFloat width = floorf(self.width / column);
+    CGFloat height = floorf(self.height / row);
+    
+    for (NSInteger i = 1; i < column; i++) {
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(width * i, 0, 0.5, self.height)];
+        line.backgroundColor = color;
+        [self addSubview:line];
+    }
+    
+    for (NSInteger i = 1; i < row; i++) {
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(0, height * i, self.width, 0.5)];
+        line.backgroundColor = color;
+        [self addSubview:line];
+    }
+}
+
 @end
+
+@implementation UILabel (ViewUtils)
+
+- (void)setFontSize:(CGFloat)fontSize {
+    objc_setAssociatedObject(self, &"AYFontSizeKey", @(fontSize), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.font = [UIFont systemFontOfSize:fontSize];
+}
+
+- (CGFloat)fontSize {
+    return [objc_getAssociatedObject(self, &"AYFontSizeKey") floatValue];
+}
+
+- (void)widthToFit {
+    self.width = [self sizeOfTextWithMaxWidth:[UIScreen mainScreen].bounds.size.width].width;
+}
+
+- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth {
+    if (self.text.length == 0) {
+        return CGSizeZero;
+    }
+    
+    NSDictionary *attributes = @{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize]};
+    
+    CGSize labelSize = [self.text boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading |NSStringDrawingTruncatesLastVisibleLine attributes:attributes context:nil].size;
+    
+    return CGSizeMake(ceilf(labelSize.width), ceilf(labelSize.height));
+}
+
+@end
+
