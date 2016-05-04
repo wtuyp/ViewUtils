@@ -634,7 +634,7 @@
     return [objc_getAssociatedObject(self, &"AYFontSizeKey") floatValue];
 }
 
-- (void)widthToFit {
+- (void)widthToFitTextWidth {
     self.width = [self sizeOfTextWithMaxWidth:[UIScreen mainScreen].bounds.size.width].width;
 }
 

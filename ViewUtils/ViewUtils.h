@@ -138,7 +138,7 @@
 
 @property (nonatomic, assign) CGFloat fontSize;
 
-- (void)widthToFit;     //以屏宽为最大宽度
+- (void)widthToFitTextWidth;     //max width is screen width
 - (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth;
 
 @end
