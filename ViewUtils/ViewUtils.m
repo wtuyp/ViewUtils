@@ -122,7 +122,7 @@
 
 - (UIView *)viewWithTag:(NSInteger)tag ofClass:(Class)viewClass
 {
-    return [self viewMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, __unused NSDictionary *bindings) {
+    return [self viewMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(UIView *evaluatedObject, __unused NSDictionary *bindings) {
         return [evaluatedObject tag] == tag && [evaluatedObject isKindOfClass:viewClass];
     }]];
 }
@@ -147,7 +147,7 @@
         //avoid creating unnecessary array
         if ([view.subviews count])
         {
-        	[matches addObjectsFromArray:[view viewsMatchingPredicate:predicate]];
+            [matches addObjectsFromArray:[view viewsMatchingPredicate:predicate]];
         }
         else if ([predicate evaluateWithObject:view])
         {
@@ -159,14 +159,14 @@
 
 - (NSArray *)viewsWithTag:(NSInteger)tag
 {
-    return [self viewsMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, __unused id bindings) {
+    return [self viewsMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(UIView *evaluatedObject, __unused id bindings) {
         return [evaluatedObject tag] == tag;
     }]];
 }
 
 - (NSArray *)viewsWithTag:(NSInteger)tag ofClass:(Class)viewClass
 {
-    return [self viewsMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, __unused id bindings) {
+    return [self viewsMatchingPredicate:[NSPredicate predicateWithBlock:^BOOL(UIView *evaluatedObject, __unused id bindings) {
         return [evaluatedObject tag] == tag && [evaluatedObject isKindOfClass:viewClass];
     }]];
 }
@@ -623,6 +623,47 @@
 
 @end
 
+@implementation UIView (AYGesture)
+
+- (void)tapGestureWithBlock:(void (^)(UIView *selfView))block {
+    self.userInteractionEnabled = YES;
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                 action:@selector(tapGestureAction)];
+    tapGesture.numberOfTapsRequired = 1;
+    [self addGestureRecognizer:tapGesture];
+    objc_setAssociatedObject(self, @selector(tapGestureAction), block, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void)tapGestureAction {
+    void(^_touchBlock)(UIView *selfView) = objc_getAssociatedObject(self, _cmd);
+    __weak typeof(self) weakSelf = self;
+    if (_touchBlock) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        _touchBlock(strongSelf);
+    }
+}
+
+- (void)longPressGestureWithBlock:(void (^)(UIView *selfView))block {
+    self.userInteractionEnabled = YES;
+    UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressGestureAction:)];
+    longPressGesture.minimumPressDuration = 0.5;
+    [self addGestureRecognizer:longPressGesture];
+    objc_setAssociatedObject(self, @selector(longPressGestureAction:), block, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void)longPressGestureAction:(UIGestureRecognizer*)gesture {
+    if (gesture.state == UIGestureRecognizerStateBegan) {
+        void(^_touchBlock)(UIView *selfView) = objc_getAssociatedObject(self, _cmd);
+        __weak typeof(self) weakSelf = self;
+        if (_touchBlock) {
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            _touchBlock(strongSelf);
+        }
+    }
+}
+
+@end
+
 @implementation UILabel (ViewUtils)
 
 - (void)setFontSize:(CGFloat)fontSize {
@@ -645,10 +686,31 @@
     
     NSDictionary *attributes = @{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize]};
     
-    CGSize labelSize = [self.text boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading |NSStringDrawingTruncatesLastVisibleLine attributes:attributes context:nil].size;
+    CGSize labelSize = [self.text boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
+                                               options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine
+                                            attributes:attributes context:nil].size;
     
     return CGSizeMake(ceilf(labelSize.width), ceilf(labelSize.height));
 }
 
 @end
 
+@implementation UITableView (ViewUtils)
+
+- (void)registerClass:(nullable Class)cellClass {
+    [self registerClass:cellClass forCellReuseIdentifier:NSStringFromClass(cellClass)];
+}
+
+- (void)endRefreshing {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    if ([self respondsToSelector:NSSelectorFromString(@"mj_header")]) {
+        [[self performSelector:NSSelectorFromString(@"mj_header")] performSelectorOnMainThread:NSSelectorFromString(@"endRefreshing") withObject:nil waitUntilDone:NO];
+    }
+    if ([self respondsToSelector:NSSelectorFromString(@"mj_footer")]) {
+        [[self performSelector:NSSelectorFromString(@"mj_footer")] performSelectorOnMainThread:NSSelectorFromString(@"endRefreshing") withObject:nil waitUntilDone:NO];
+    }
+#pragma clang diagnostic pop
+}
+
+@end

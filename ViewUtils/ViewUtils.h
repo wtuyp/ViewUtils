@@ -134,11 +134,25 @@
 
 @end
 
+@interface UIView (AYGesture)
+
+- (void)tapGestureWithBlock:(void (^)(UIView *selfView))block;
+- (void)longPressGestureWithBlock:(void (^)(UIView *selfView))block;
+
+@end
+
 @interface UILabel (ViewUtils)
 
 @property (nonatomic, assign) CGFloat fontSize;
 
-- (void)widthToFitTextWidth;     //max width is screen width
-- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth;
+- (void)widthToFitTextWidth;     //call after set fontSize and max width is screen width
+- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth;     //call after set fontSize
+
+@end
+
+@interface UITableView (ViewUtils)
+
+- (void)registerClass:(nullable Class)cellClass;
+- (void)endRefreshing;
 
 @end
