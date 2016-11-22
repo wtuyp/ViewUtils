@@ -145,14 +145,25 @@
 
 @property (nonatomic, assign) CGFloat fontSize;
 
-- (void)widthToFitTextWidth;     //call after set fontSize and max width is screen width
-- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth;     //call after set fontSize
-
 @end
 
 @interface UITableView (ViewUtils)
 
 - (void)registerClass:(nullable Class)cellClass;
+- (nullable __kindof UITableViewCell *)dequeueReusableCellWithClass:(nullable Class)cellClass;
 - (void)endRefreshing;
+
+@end
+
+@interface UIScrollView (ViewUtils)
+
+- (void)scrollToTop;
+- (void)scrollToBottom;
+- (void)scrollToLeft;
+- (void)scrollToRight;
+- (void)scrollToTopAnimated:(BOOL)animated;
+- (void)scrollToBottomAnimated:(BOOL)animated;
+- (void)scrollToLeftAnimated:(BOOL)animated;
+- (void)scrollToRightAnimated:(BOOL)animated;
 
 @end

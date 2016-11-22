@@ -675,30 +675,16 @@
     return [objc_getAssociatedObject(self, &"AYFontSizeKey") floatValue];
 }
 
-- (void)widthToFitTextWidth {
-    self.width = [self sizeOfTextWithMaxWidth:[UIScreen mainScreen].bounds.size.width].width;
-}
-
-- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth {
-    if (self.text.length == 0) {
-        return CGSizeZero;
-    }
-    
-    NSDictionary *attributes = @{NSFontAttributeName : [UIFont systemFontOfSize:self.fontSize]};
-    
-    CGSize labelSize = [self.text boundingRectWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)
-                                               options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine
-                                            attributes:attributes context:nil].size;
-    
-    return CGSizeMake(ceilf(labelSize.width), ceilf(labelSize.height));
-}
-
 @end
 
 @implementation UITableView (ViewUtils)
 
 - (void)registerClass:(nullable Class)cellClass {
     [self registerClass:cellClass forCellReuseIdentifier:NSStringFromClass(cellClass)];
+}
+
+- (nullable __kindof UITableViewCell *)dequeueReusableCellWithClass:(nullable Class)cellClass {
+    return [self dequeueReusableCellWithIdentifier:NSStringFromClass(cellClass)];
 }
 
 - (void)endRefreshing {
@@ -711,6 +697,50 @@
         [[self performSelector:NSSelectorFromString(@"mj_footer")] performSelectorOnMainThread:NSSelectorFromString(@"endRefreshing") withObject:nil waitUntilDone:NO];
     }
 #pragma clang diagnostic pop
+}
+
+@end
+
+@implementation UIScrollView (ViewUtils)
+
+- (void)scrollToTop {
+    [self scrollToTopAnimated:YES];
+}
+
+- (void)scrollToBottom {
+    [self scrollToBottomAnimated:YES];
+}
+
+- (void)scrollToLeft {
+    [self scrollToLeftAnimated:YES];
+}
+
+- (void)scrollToRight {
+    [self scrollToRightAnimated:YES];
+}
+
+- (void)scrollToTopAnimated:(BOOL)animated {
+    CGPoint off = self.contentOffset;
+    off.y = 0 - self.contentInset.top;
+    [self setContentOffset:off animated:animated];
+}
+
+- (void)scrollToBottomAnimated:(BOOL)animated {
+    CGPoint off = self.contentOffset;
+    off.y = MAX(self.contentSize.height - self.bounds.size.height + self.contentInset.bottom, 0.0);
+    [self setContentOffset:off animated:animated];
+}
+
+- (void)scrollToLeftAnimated:(BOOL)animated {
+    CGPoint off = self.contentOffset;
+    off.x = 0 - self.contentInset.left;
+    [self setContentOffset:off animated:animated];
+}
+
+- (void)scrollToRightAnimated:(BOOL)animated {
+    CGPoint off = self.contentOffset;
+    off.x = self.contentSize.width - self.bounds.size.width + self.contentInset.right;
+    [self setContentOffset:off animated:animated];
 }
 
 @end
