@@ -39,6 +39,7 @@
 
 + (id)instanceWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)bundleOrNil owner:(id)owner;
 - (void)loadContentsWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)bundleOrNil;
++ (instancetype)loadViewWithNibName:(NSString *)name;
 
 //hierarchy
 
@@ -60,9 +61,16 @@
 - (BOOL)isSuperviewOfView:(UIView *)view;
 - (BOOL)isSubviewOfView:(UIView *)view;
 - (void)removeAllSubviews;
+- (void)removeAllSubviewsWithClass:(Class)class;
+- (void)removeAllLayers;
 
 - (UIViewController *)firstViewController;
 - (UIView *)firstResponder;
+
+//snapshot
+- (UIImage *)snapshotImage;
+- (UIImage *)snapshotImageAfterScreenUpdates:(BOOL)afterUpdates;
+- (NSData *)snapshotPDF;
 
 //frame accessors
 
@@ -76,14 +84,16 @@
 @property (nonatomic, assign) CGFloat height;
 @property (nonatomic, assign) CGFloat centerX;
 @property (nonatomic, assign) CGFloat centerY;
-@property (nonatomic, assign, readonly) CGFloat minX;
-@property (nonatomic, assign, readonly) CGFloat midX;
-@property (nonatomic, assign, readonly) CGFloat maxX;
-@property (nonatomic, assign, readonly) CGFloat minY;
-@property (nonatomic, assign, readonly) CGFloat midY;
-@property (nonatomic, assign, readonly) CGFloat maxY;
-@property (nonatomic, assign, readonly) CGFloat halfWidth;
-@property (nonatomic, assign, readonly) CGFloat halfHeight;
+
+@property (nonatomic, readonly) CGFloat minX;
+@property (nonatomic, readonly) CGFloat midX;
+@property (nonatomic, readonly) CGFloat maxX;
+@property (nonatomic, readonly) CGFloat minY;
+@property (nonatomic, readonly) CGFloat midY;
+@property (nonatomic, readonly) CGFloat maxY;
+
+@property (nonatomic, readonly) CGFloat width_2;    // width / 2.0
+@property (nonatomic, readonly) CGFloat height_2;   // height / 2.0
 
 //bounds accessors
 
@@ -97,9 +107,11 @@
 @property (nonatomic, readonly) CGPoint contentCenter;
 
 //layer accessors
+@property (nonatomic, assign) CGFloat cornerRadius;
 @property (nonatomic, assign) UIColor *borderColor;
 @property (nonatomic, assign) CGFloat borderWidth;
-@property (nonatomic, assign) CGFloat cornerRadius;
+
+- (void)setBorderWidth:(CGFloat)borderWidth color:(UIColor *)borderColor;
 
 //additional frame setters
 
@@ -113,5 +125,56 @@
 - (void)crossfadeWithDuration:(NSTimeInterval)duration;
 - (void)crossfadeWithDuration:(NSTimeInterval)duration completion:(void (^)(void))completion;
 
+//add sub-views
+- (void)addTopLineWithColor:(UIColor *)color;
+- (void)addBottomLineWithColor:(UIColor *)color;
+- (void)addLeftLineWithColor:(UIColor *)color;
+- (void)addRightLineWithColor:(UIColor *)color;
+
+- (void)addTopLineWithColor:(UIColor *)color height:(CGFloat)height;
+- (void)addBottomLineWithColor:(UIColor *)color height:(CGFloat)height;
+- (void)addLeftLineWithColor:(UIColor *)color width:(CGFloat)width;
+- (void)addRightLineWithColor:(UIColor *)color width:(CGFloat)width;
+
+- (void)addSeparateLineWithColor:(UIColor *)color row:(NSUInteger)row column:(NSUInteger)column;
+
 @end
 
+@interface UIView (AYGesture)
+
+- (void)tapGestureWithBlock:(void (^)(UIView *selfView))block;
+- (void)longPressGestureWithBlock:(void (^)(UIView *selfView))block;
+
+@end
+
+@interface UILabel (ViewUtils)
+
+@property (nonatomic, assign) CGFloat fontSize;
+
+- (void)fitTextWidth:(NSString *)text;
+- (CGSize)sizeOfTextWithMaxWidth:(CGFloat)maxWidth;
+
+@end
+
+@interface UITableView (ViewUtils)
+
+- (void)registerClass:(Class)cellClass;
+
+@end
+
+@interface UIScrollView (ViewUtils)
+
+- (void)scrollToTop;
+- (void)scrollToBottom;
+- (void)scrollToLeft;
+- (void)scrollToRight;
+- (void)scrollToTopAnimated:(BOOL)animated;
+- (void)scrollToBottomAnimated:(BOOL)animated;
+- (void)scrollToLeftAnimated:(BOOL)animated;
+- (void)scrollToRightAnimated:(BOOL)animated;
+
+- (void)setContentHeight:(CGFloat)height;
+
+- (void)endRefreshing;
+
+@end
