@@ -178,3 +178,25 @@
 - (void)endRefreshing;
 
 @end
+
+@interface UIButton (ViewUtils)
+
+@property (nonatomic, readonly) void (^actionBlock)(UIButton *button);
+
+- (void)setActionBlock:(void (^)(UIButton *button))actionBlock;
+
+@end
+
+@interface UITextField (ViewUtils)
+
+- (void)addLeftImage:(UIImage *)image color:(UIColor *)color;
+- (void)addRightImage:(UIImage *)image color:(UIColor *)color;
+
+- (void)addRightButtonImage:(UIImage *)image
+              selectedImage:(UIImage *)selectedImage
+                actionBlock:(void (^)(UIButton *button))actionBlock;
+
+- (void)setAttributedPlaceholderWithText:(NSString *)text color:(UIColor *)color;
+- (void)setAttributedPlaceholderWithText:(NSString *)text color:(UIColor *)color fontSize:(CGFloat)fontSize;
+
+@end

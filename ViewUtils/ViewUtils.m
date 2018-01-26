@@ -817,3 +817,122 @@
 }
 
 @end
+
+@implementation UIButton (ViewUtils)
+
+- (void)setActionBlock:(void (^)(UIButton *button))actionBlock {
+    [self removeTarget:self
+                action:@selector(buttonAction)
+      forControlEvents:UIControlEventTouchUpInside];
+    if (actionBlock) {
+        [self addTarget:self action:@selector(buttonAction) forControlEvents:UIControlEventTouchUpInside];
+    }
+    objc_setAssociatedObject(self, @selector(buttonAction), actionBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    
+}
+
+- (void)buttonAction {
+    void (^actionBlock)(UIButton *button) = objc_getAssociatedObject(self, _cmd);
+    if (actionBlock) {
+        __weak UIButton *weakBtn = self;
+        actionBlock(weakBtn);
+    }
+}
+
+- (void (^)(UIButton *button))actionBlock {
+    void (^actionBlock)(UIButton *button) = objc_getAssociatedObject(self, @selector(buttonAction));
+    if (actionBlock) {
+        return actionBlock;
+    } else {
+        return nil;
+    }
+}
+
+@end
+
+@implementation UITextField (ViewUtils)
+
+- (void)addLeftImage:(UIImage *)image color:(UIColor *)color {
+    if (!image) {
+        self.leftViewMode = UITextFieldViewModeNever;
+        self.leftView = nil;
+        
+        return;
+    }
+    
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
+    imageView.contentMode = UIViewContentModeCenter;
+    
+    if (!color) {
+        imageView.image = image;
+    } else {
+        imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        imageView.tintColor = color;
+    }
+    
+    self.leftViewMode = UITextFieldViewModeAlways;
+    self.leftView = imageView;
+}
+
+- (void)addRightImage:(UIImage *)image color:(UIColor *)color {
+    if (!image) {
+        self.rightViewMode = UITextFieldViewModeNever;
+        self.rightView = nil;
+        return;
+    }
+    
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
+    imageView.contentMode = UIViewContentModeCenter;
+    
+    if (!color) {
+        imageView.image = image;
+    } else {
+        imageView.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        imageView.tintColor = color;
+    }
+    
+    self.rightViewMode = UITextFieldViewModeAlways;
+    self.rightView = imageView;
+}
+
+- (void)addRightButtonImage:(UIImage *)image
+              selectedImage:(UIImage *)selectedImage
+                actionBlock:(void (^)(UIButton *button))actionBlock {
+    if (!image) {
+        self.rightViewMode = UITextFieldViewModeNever;
+        self.rightView = nil;
+        
+        return;
+    }
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
+    
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    [button setImage:image forState:UIControlStateNormal];
+    if (selectedImage) {
+        [button setImage:selectedImage forState:UIControlStateSelected];
+    }
+    button.adjustsImageWhenHighlighted = NO;
+    button.frame = view.bounds;
+    button.contentMode = UIViewContentModeCenter;
+    if (actionBlock) {
+        [button setActionBlock:actionBlock];
+    }
+    [view addSubview:button];
+    
+    self.rightViewMode = UITextFieldViewModeAlways;
+    self.rightView = view;
+}
+
+- (void)setAttributedPlaceholderWithText:(NSString *)text color:(UIColor *)color {
+    self.attributedPlaceholder = [[NSAttributedString alloc] initWithString:text ?: @""
+                                                                 attributes:@{NSForegroundColorAttributeName : color ? : UIColor.blackColor}];
+}
+
+- (void)setAttributedPlaceholderWithText:(NSString *)text color:(UIColor *)color fontSize:(CGFloat)fontSize {
+    self.attributedPlaceholder = [[NSAttributedString alloc] initWithString:text ?: @""
+                                                                 attributes:@{NSForegroundColorAttributeName : color ? : UIColor.blackColor,
+                                                                              NSFontAttributeName : [UIFont systemFontOfSize:fontSize]}];
+}
+
+@end
